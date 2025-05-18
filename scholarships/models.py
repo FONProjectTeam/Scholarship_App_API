@@ -17,7 +17,7 @@ class Scholarship(models.Model):
     category = models.ForeignKey(ScholarshipCategory, related_name='scholarships', on_delete=models.SET_NULL, null=True)
     created_by = models.ForeignKey(User, related_name='created_scholarships', on_delete=models.SET_NULL, null=True)
     amount = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
-    currency = models.CharField(max_length=3, default='USD')
+    currency = models.CharField(max_length=3, default='NGN')
     application_start_date = models.DateField()
     application_end_date = models.DateField()
     requirements = models.TextField()

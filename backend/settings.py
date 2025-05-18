@@ -1,5 +1,6 @@
 
 from datetime import timedelta
+import os
 from pathlib import Path
 
 
@@ -16,7 +17,7 @@ SECRET_KEY = 'django-insecure-2quj$jcn=5p$yuqcxl!4r9q8fe*2n)k&ss8o=i_g5nlw%w!lsx
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*', 'localhost']
 
 
 # Application definition
@@ -36,6 +37,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework_simplejwt.token_blacklist',
     'drf_yasg',
+    'django_filters',
     #'rest_framework_simplejwt',
     #'corsheaders',
 
@@ -134,7 +136,23 @@ STATICFILES_DIRS = [
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
 MEDIA_URL = 'media/'
-MEDIA_ROOT = BASE_DIR / "media"
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+#MEDIA_ROOT = BASE_DIR / "media"
+
+# Email settings
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.example.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'notifications@scholarshipapp.com'
+EMAIL_HOST_PASSWORD = 'your-password'
+DEFAULT_FROM_EMAIL = 'Scholarship System <notifications@scholarshipapp.com>'
+
+
+
+# Document upload settings
+DOCUMENT_ALLOWED_TYPES = ['application/pdf', 'image/jpeg', 'image/png', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document']
+DOCUMENT_MAX_SIZE = 5 * 1024 * 1024  # 5MB
 
 AUTH_USER_MODEL = 'users.User'
 
@@ -150,6 +168,7 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.SessionAuthentication',  # Required for browsable API
     ],
 }
+
 
 
 SIMPLE_JWT = {
@@ -183,6 +202,18 @@ SIMPLE_JWT = {
     'SLIDING_TOKEN_LIFETIME': timedelta(minutes=5),
     'SLIDING_TOKEN_REFRESH_LIFETIME': timedelta(days=1),
 }
+
+SWAGGER_SETTINGS = {
+    'SECURITY_DEFINITIONS': {
+        'Bearer': {
+            'type': 'apiKey',
+            'name': 'Authorization',
+            'in': 'header',
+            'description': 'JWT Authorization header using the Bearer scheme. Example: "Bearer {token}"',
+        }
+    }
+}
+
 
 
 # Jazzmin settings
