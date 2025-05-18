@@ -34,6 +34,9 @@ schema_view = get_schema_view(
     ),
     public=True,
     permission_classes=(permissions.AllowAny,),
+
+    # Set the authentication Swagger UI to use JWT
+    authentication_classes=[],
 )
 
 

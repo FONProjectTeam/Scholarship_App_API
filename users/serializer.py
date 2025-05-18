@@ -32,7 +32,7 @@ class RegisterSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ['first_name', 'last_name', 'other_name', 'phone_number', 'email', 'state_of_origin', 'lga_of_origin',  'password', 'password2']
+        fields = ['first_name', 'last_name', 'other_name', 'phone_number', 'email',  'password', 'password2']
 
 
     def validate(self, attrs):
@@ -61,7 +61,7 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = "__all__"
-        #read_only_fields = ['id']
+        read_only_fields = ['id']
         
     
 class UserProfileSerializer(serializers.ModelSerializer):
@@ -70,9 +70,20 @@ class UserProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserProfile
         fields = "__all__"
-        #read_only_fields = ['id', 'user']
+        read_only_fields = ['id', 'user', 'pid']
 
     def to_representation(self, instance):
         representation = super().to_representation(instance)
         representation['user'] = UserSerializer(instance.user).data
         return representation
+
+class PasswordChangeSerializer(serializers.Serializer):
+    otp = serializers.CharField(required=True)
+    uidb64 = serializers.CharField(required=True)
+    new_password = serializers.CharField(required=True, write_only=True)
+    
+    def validate_new_password(self, value):
+        # Add password validation if needed
+        if len(value) < 8:
+            raise serializers.ValidationError("Password must be at least 8 characters long")
+        return value

@@ -1,7 +1,6 @@
 from datetime import timedelta
 from django.utils import timezone
 from django.shortcuts import render
-#from rest_framework.renderers import JSONRenderer, BrowsableAPIRenderer
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework import renderers
 from rest_framework import generics
@@ -17,7 +16,10 @@ from django.template.loader import render_to_string
 from django.utils.html import strip_tags
 import logging
 from users.models import User, UserProfile
-from users.serializer import MyTokenObtainPairSerializer, RegisterSerializer, UserSerializer
+from users.serializer import MyTokenObtainPairSerializer, PasswordChangeSerializer, RegisterSerializer, UserSerializer, UserProfileSerializer
+
+from rest_framework import viewsets, permissions
+from rest_framework.decorators import action
 
 
 class MyTokenObtainPairView(TokenObtainPairView):
@@ -32,8 +34,6 @@ def generate_otp():
      uuid_key = shortuuid.uuid()
      otp = uuid_key[:6]
      return otp
-
-
 
 logger = logging.getLogger(__name__)
 def send_otp_email(email, otp, reset_link=None):
@@ -76,8 +76,6 @@ def send_otp_email(email, otp, reset_link=None):
         logger.error(f"Failed to send password reset email to {email}: {str(e)}")
         return False
 
-
-
 #Password Reset
 class PasswordResetEmailVerify(generics.RetrieveAPIView): 
     permission_classes = [AllowAny]
@@ -103,6 +101,7 @@ class PasswordResetEmailVerify(generics.RetrieveAPIView):
             
             if not email_sent:
                 logger.warning(f"Password reset email failed to send for user {user.email}")
+                print(reset_link)
                 # You might want to implement retry logic here or notify admins
             
             return user
@@ -114,12 +113,10 @@ class PasswordResetEmailVerify(generics.RetrieveAPIView):
             logger.error(f"Error in password reset for email {email}: {str(e)}")
             raise Http404("An error occurred while processing your request.")
 
-
 #Password Change
-#logger = logging.getLogger(__name__)
 class PasswordChangeView(generics.CreateAPIView):
     permission_classes = [AllowAny]
-    serializer_class = UserSerializer
+    serializer_class = PasswordChangeSerializer
 
     def create(self, request, *args, **kwargs):
         payload = request.data
@@ -184,3 +181,35 @@ class PasswordChangeView(generics.CreateAPIView):
             return False
             
         return True
+    
+    
+class UserProfileViewSet(viewsets.ModelViewSet):
+    serializer_class = UserProfileSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    
+    def get_queryset(self):
+        return UserProfile.objects.filter(user=self.request.user)
+        
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+    
+    @action(detail=False, methods=['get'])
+    def me(self, request):
+        profile = UserProfile.objects.get(user=request.user)
+        serializer = self.get_serializer(profile)
+        return Response(serializer.data)
+
+
+'''class UserProfileView(generics.RetrieveUpdateAPIView):
+    queryset = UserProfile.objects.all()
+    serializer_class = UserProfileSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_object(self):
+        try:
+            return self.request.user.profile
+        except UserProfile.DoesNotExist:
+            return UserProfile.objects.create(user=self.request.user)
+
+    def perform_update(self, serializer):
+        serializer.save(user=self.request.user)'''

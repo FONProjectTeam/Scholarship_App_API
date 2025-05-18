@@ -21,9 +21,7 @@ class User(AbstractUser):
     other_name = models.CharField(max_length=150, blank=True, null=True)
     username = models.CharField(max_length=150, unique=True, blank=True)
 
-    state_of_origin = models.CharField(max_length=50, blank=True)
-    lga_of_origin = models.CharField(max_length=100, blank=True)
-
+    
     otp = models.CharField(max_length=100, blank=True, null=True)
     otp_created_at = models.DateTimeField(null=True, blank=True)
     
@@ -47,6 +45,8 @@ class User(AbstractUser):
 class UserProfile(models.Model):
     user = models.OneToOneField(User, related_name='profile', on_delete=models.CASCADE)
     bio = models.TextField(blank=True, null=True)
+    state_of_origin = models.CharField(max_length=50, blank=True)
+    lga_of_origin = models.CharField(max_length=100, blank=True)
     lcda = models.CharField(max_length=100, blank=True, null=True)
     profile_picture = models.ImageField(upload_to='profile_pictures/', default="default/default-profile.jpg", null=True, blank=True)
     address = models.TextField(blank=True, null=True)
